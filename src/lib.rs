@@ -3,6 +3,30 @@ pub mod simplex;
 
 use std::collections::HashMap;
 
+#[macro_export]
+macro_rules! variable {
+    ($name:literal) => {
+        $crate::Variable::new($name)
+    };
+
+    ($name:literal >= $lower_bound:literal) => {
+        $crate::Variable::new(String::from($name)).with_lower_bound(Some($lower_bound))
+    };
+
+    ($lower_bound:literal <= $name:literal <= $upper_bound:literal) => {
+        $crate::Variable::new(String::from($name))
+            .with_lower_bound(Some($lower_bound))
+            .with_upper_bound(Some($upper_bound))
+    };
+}
+
+#[macro_export]
+macro_rules! constraint {
+    ($name:literal <= $rhs:literal) => {
+        $crate::Constraint::new(String::from($name), ConstraintType::LessThan($rhs))
+    };
+}
+
 pub enum ConstraintType {
     LessThan(f64),
     Equals(f64),
@@ -28,13 +52,18 @@ pub struct Model {
 }
 
 impl Variable {
-    pub fn new(name: String, objective_value: f64) -> Variable {
+    pub fn new(name: String) -> Variable {
         Variable {
             name,
             lower_bound: None,
             upper_bound: None,
-            objective_value,
+            objective_value: 0.0,
         }
+    }
+
+    pub fn with_objective(mut self, objective_value: f64) -> Self {
+        self.objective_value = objective_value;
+        self
     }
 
     pub fn with_lower_bound(mut self, lower_bound: Option<f64>) -> Self {
