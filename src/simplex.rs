@@ -87,7 +87,7 @@ impl<'a> Solver<'a> {
             }
         }
 
-        for (variable_name, coefficient) in &constraint.coefficients {
+        for (variable_name, coefficient) in constraint.coefficients() {
             let column = self.variable_column.get(variable_name);
 
             if let None = column {
