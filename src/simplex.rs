@@ -141,6 +141,8 @@ impl<'a> Solver<'a> {
                     .set_value(current_row, current_column, new_value);
             }
         }
+
+        self.basic_variable[pivot_row] = pivot_column;
     }
 
     /// Makes the coefficient of the entering variable equals 1.
