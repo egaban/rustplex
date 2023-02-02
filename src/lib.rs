@@ -1,5 +1,6 @@
 mod matrix;
 pub mod simplex;
+mod tableau;
 
 use std::collections::HashMap;
 
@@ -27,12 +28,14 @@ macro_rules! constraint {
     };
 }
 
+#[derive(Clone)]
 pub enum ConstraintType {
     LessThan(f64),
     Equals(f64),
     GreaterThan(f64),
 }
 
+#[derive(Clone)]
 pub struct Variable {
     name: String,
     lower_bound: Option<f64>,
@@ -40,12 +43,14 @@ pub struct Variable {
     objective_value: f64,
 }
 
+#[derive(Clone)]
 pub struct Constraint {
     name: String,
     coefficients: HashMap<String, f64>,
     constraint_type: ConstraintType,
 }
 
+#[derive(Clone)]
 pub struct Model {
     variables: HashMap<String, Variable>,
     constraints: HashMap<String, Constraint>,
@@ -109,6 +114,12 @@ impl Constraint {
 
     fn constraint_type(&self) -> &ConstraintType {
         &self.constraint_type
+    }
+
+    fn get_coefficient(&self, variable: &Variable) -> f64 {
+        self.coefficients
+            .get(variable.name())
+            .map_or(0.0, |c| c.clone())
     }
 }
 
