@@ -58,7 +58,7 @@ impl Tableau {
     }
 
     fn create_constraints(&mut self, model: &Model) {
-        for constraint in model.constraints.values() {
+        for constraint in model.constraint_handler.constraints.values() {
             self.create_constraint(constraint);
         }
     }

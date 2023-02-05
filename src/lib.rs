@@ -51,9 +51,19 @@ pub struct Constraint {
 }
 
 #[derive(Clone)]
-pub struct Model {
+struct VariableHandler {
     variables: HashMap<String, Variable>,
+}
+
+#[derive(Clone)]
+struct ConstraintHandler {
     constraints: HashMap<String, Constraint>,
+}
+
+#[derive(Clone)]
+pub struct Model {
+    variable_handler: VariableHandler,
+    constraint_handler: ConstraintHandler,
 }
 
 impl Variable {
@@ -126,24 +136,45 @@ impl Constraint {
 impl Model {
     pub fn new() -> Model {
         Model {
+            variable_handler: VariableHandler::new(),
+            constraint_handler: ConstraintHandler::new(),
+        }
+    }
+
+    pub fn variables(&self) -> &HashMap<String, Variable> {
+        &self.variable_handler.variables
+    }
+
+    pub fn add_variable(&mut self, variable: Variable) {
+        self.variable_handler.add(variable);
+    }
+
+    pub fn add_constraint(&mut self, constraint: Constraint) {
+        self.constraint_handler.add(constraint);
+    }
+}
+
+impl VariableHandler {
+    fn new() -> Self {
+        Self {
             variables: HashMap::new(),
+        }
+    }
+
+    fn add(&mut self, variable: Variable) {
+        self.variables.insert(variable.name().to_string(), variable);
+    }
+}
+
+impl ConstraintHandler {
+    fn new() -> Self {
+        Self {
             constraints: HashMap::new(),
         }
     }
 
-    pub fn add_variable(&mut self, variable: Variable) {
-        log::trace!("Adding variable {}", variable.name());
-        let name = variable.name.clone();
-        self.variables.insert(name, variable);
-    }
-
-    pub fn add_constraint(&mut self, constraint: Constraint) {
-        log::trace!("Adding constraint {}", constraint.name());
-        let name = constraint.name.clone();
-        self.constraints.insert(name, constraint);
-    }
-
-    pub fn variables(&self) -> &HashMap<String, Variable> {
-        &self.variables
+    fn add(&mut self, constraint: Constraint) {
+        self.constraints
+            .insert(constraint.name().to_string(), constraint);
     }
 }
