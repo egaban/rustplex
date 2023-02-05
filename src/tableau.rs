@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 const RHS_INDEX: usize = 0;
 const Z_INDEX: usize = 1;
+const BIG_M: f64 = 1e150;
 
 enum ColumnType {
     Single(usize),
@@ -72,11 +73,14 @@ impl Tableau {
                 self.matrix.set_value(row, RHS_INDEX, *rhs);
                 self.create_slack_variable(row);
             }
-            ConstraintType::Equals(_rhs) => {
-                todo!();
+            ConstraintType::Equals(rhs) => {
+                self.matrix.set_value(row, RHS_INDEX, *rhs);
+                self.create_artificial_variable(row);
             }
-            ConstraintType::GreaterThan(_rhs) => {
-                todo!();
+            ConstraintType::GreaterThan(rhs) => {
+                self.matrix.set_value(row, RHS_INDEX, *rhs);
+                self.create_artificial_variable(row);
+                self.create_surplus_variable(row);
             }
         }
 
@@ -105,6 +109,28 @@ impl Tableau {
         let column = self.matrix.add_column();
         self.matrix.set_value(row, column, 1.0);
         self.basic_variable.push(column);
+    }
+
+    /// Makes an artificial variable for the big M method.
+    fn create_artificial_variable(&mut self, row: usize) {
+        let column = self.matrix.add_column();
+        self.matrix.set_value(row, column, 1.0);
+        self.matrix.set_value(0, column, BIG_M);
+
+        // We must make the variable disappear from the row 0, so we can start
+        // with the cannonical form.
+
+        for column in 0..self.matrix.num_cols() {
+            let new_value = self.matrix.get_value(0, column) - BIG_M * self.matrix.get_value(row, column);
+            self.matrix.set_value(0, column, new_value);
+        }
+
+        self.basic_variable.push(column);
+    }
+
+    fn create_surplus_variable(&mut self, row: usize) {
+        let column = self.matrix.add_column();
+        self.matrix.set_value(row, column, -1.0);
     }
 
     /// Returns the reduced cost of specified column.
