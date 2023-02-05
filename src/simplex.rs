@@ -109,9 +109,18 @@ impl Solver {
         Some(ratio)
     }
 
-    /// TODO: Creates all lower and upper bound (or fixed values) constraints for variables. Also
-    /// replaces negative variables for (x^+ - x^-)
+    /// Preprocess the model, adding needed constraints.
+
+    /// This function currently:
+    /// 1. Fixes constraints that have negative RHS by multiplying everything by -1;
+    /// 2. Creates constraints for the variable bounds (and fixed variables).
     fn preprocess_model(model: &mut Model) {
+        for constraint in model.constraint_handler.constraints.values_mut() {
+            if constraint.rhs() < 0.0 {
+                constraint.fix_negative_rhs();
+            }
+        }
+
         for variable in model.variable_handler.variables.values() {
             model.constraint_handler.add_bounds_constraints(variable);
         }

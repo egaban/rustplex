@@ -126,6 +126,13 @@ impl Constraint {
         &self.name
     }
 
+    /// Returns the rhs of the constraint.
+    fn rhs(&self) -> f64 {
+        match self.constraint_type {
+            ConstraintType::LessThan(rhs) | ConstraintType::Equals(rhs) | ConstraintType::GreaterThan(rhs) => rhs
+        }
+    }
+
     fn constraint_type(&self) -> &ConstraintType {
         &self.constraint_type
     }
@@ -134,6 +141,28 @@ impl Constraint {
         self.coefficients
             .get(variable.name())
             .map_or(0.0, |c| c.clone())
+    }
+
+    /// Fixes the negative RHS by multiplying the constraint by -1.
+    fn fix_negative_rhs(&mut self) {
+        match self.constraint_type {
+            ConstraintType::LessThan(rhs) => {
+                assert!(rhs < 0.0);
+                self.constraint_type = ConstraintType::GreaterThan(-rhs);
+            },
+            ConstraintType::Equals(rhs) => {
+                assert!(rhs < 0.0);
+                self.constraint_type = ConstraintType::Equals(-rhs);
+            },
+            ConstraintType::GreaterThan(rhs) => {
+                assert!(rhs < 0.0);
+                self.constraint_type = ConstraintType::LessThan(-rhs);
+            },
+        }
+
+        for coefficient in &mut self.coefficients.values_mut() {
+            *coefficient = -*coefficient;
+        }
     }
 }
 
