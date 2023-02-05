@@ -26,6 +26,10 @@ macro_rules! constraint {
     ($name:literal <= $rhs:literal) => {
         $crate::Constraint::new(String::from($name), ConstraintType::LessThan($rhs))
     };
+
+    ($name:ident <= $rhs:ident) => {
+        $crate::Constraint::new($name, ConstraintType::LessThan($rhs))
+    };
 }
 
 #[derive(Clone)]
@@ -176,5 +180,24 @@ impl ConstraintHandler {
     fn add(&mut self, constraint: Constraint) {
         self.constraints
             .insert(constraint.name().to_string(), constraint);
+    }
+
+    // TODO: Lower bounds
+    // TODO: Fixed values
+    // TODO: Negative variables
+    fn add_bounds_constraints(&mut self, variable: &Variable) {
+        if variable.upper_bound.is_some() {
+            self.add_upper_bound_constraint(variable);
+        }
+    }
+
+    fn add_upper_bound_constraint(&mut self, variable: &Variable) {
+        assert!(variable.upper_bound.is_some());
+        let ub = variable.upper_bound.unwrap();
+        let name = variable.name.to_string() + "_lb";
+
+        let mut constraint = constraint!(name <= ub);
+        constraint.set_coefficient(variable, 1.0);
+        self.add(constraint);
     }
 }

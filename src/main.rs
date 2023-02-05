@@ -6,7 +6,9 @@ fn main() {
     let mut model = Model::new();
 
     let x = variable!("x" >= 0.0).with_objective(3.0);
-    let y = variable!("y" >= 0.0).with_objective(2.0);
+    let y = variable!("y" >= 0.0)
+        .with_objective(2.0)
+        .with_upper_bound(Some(10.0));
 
     let mut c1 = constraint!("c1" <= 18.0);
     c1.set_coefficient(&x, 2.0);

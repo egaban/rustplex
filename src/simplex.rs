@@ -111,5 +111,9 @@ impl Solver {
 
     /// TODO: Creates all lower and upper bound (or fixed values) constraints for variables. Also
     /// replaces negative variables for (x^+ - x^-)
-    fn preprocess_model(model: &mut Model) {}
+    fn preprocess_model(model: &mut Model) {
+        for variable in model.variable_handler.variables.values() {
+            model.constraint_handler.add_bounds_constraints(variable);
+        }
+    }
 }
